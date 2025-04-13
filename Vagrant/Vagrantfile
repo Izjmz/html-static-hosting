@@ -1,0 +1,52 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+
+Vagrant.configure("2") do |config|
+
+  # VM image got from - https://vagrantcloud.com/search.
+  config.vm.box = "eurolinux-vagrant/centos-stream-9"
+
+  # Disabling updates from VMs every boot
+  # `vagrant box outdated`. This is not recommended.
+  # config.vm.box_check_update = false
+
+  # Create a forwarded port mapping which allows access to a specific port
+  # within the machine from a port on the host machine. In the example below,
+  # accessing "localhost:8080" will access port 80 on the guest machine.
+  # NOTE: This will enable public access to the opened port
+  config.vm.network "forwarded_port", guest: 80, host: 8080
+
+  # Create an access from a specific port to ensure the network policies
+  # config.vm.network "forwarded_port", guest: 80, host: 8080, host_ip: "127.0.0.1"
+
+  # Private network creation to make IP connection
+  # from IP designed
+  config.vm.network "private_network", ip: "192.168.50.20"
+
+  # Public network creation to generate a bridged connection
+  config.vm.network "public_network"
+
+  # Share a folder from physical device to VM
+  # First argument - Physical folder location
+  # Second argument - VM Path Location
+  config.vm.synced_folder "../html_data", "/vagrant_data"
+
+  # Disabling shared folder script 
+  # config.vm.synced_folder ".", "/vagrant", disabled: true
+
+  # Setup of VM provider
+  config.vm.provider "virtualbox" do |vb|
+
+  #  VM Memory
+  vb.memory = "4096"
+  end
+ 
+  config.vm.provision "shell", inline: <<-SHELL
+  yum install httpd wget vim unzip zip -y
+  systemctl start httpd 
+  systemctl enable httpd
+  cp -r /vagrant_data/* /var/www/html/
+  SHELL
+end
+
