@@ -1,5 +1,5 @@
 provider "aws" {
-  region = "us-east-1" # Change if needed
+  region = "us-east-1"
 }
 
 # Security Group Creation
@@ -11,65 +11,75 @@ resource "aws_security_group" "instance_sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["181.194.234.5/32"] # SSH from owner's IP
+    cidr_blocks = ["var.my_ip"] #SSH connection from admin's IP
   }
 
   ingress {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] # Public access from HTTP
+    cidr_blocks = ["0.0.0.0/0"] #HTTP connection
   }
 
   ingress {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] # Public access from HTTPS
+    cidr_blocks = ["0.0.0.0/0"] #HTTPS connection
+  }
+
+  ingress {
+    from_port   = 8080
+    to_port     = 8080
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 9090
+    to_port     = 9090
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 9100
+    to_port     = 9100
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"] # Public outbound traffic
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
-# EC2 Instance Creation
 resource "aws_instance" "my_instance" {
-  ami                  = "ami-0083ad3f55b4cbec4" # Linux CentOS 9 Stream image
+  ami                  = "ami-0083ad3f55b4cbec4"
   instance_type        = "t2.micro"
-  key_name             = "my-keypair" # SSH Key's name
+  key_name             = "my-keypair"
   iam_instance_profile = "my-tf-profile"
 
   user_data = <<-EOT
     #!/bin/bash
     sudo yum update -y
     sudo yum install -y httpd wget java-11-openjdk git
-
-    # Docker setup
     sudo yum install -y yum-utils
     sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
     sudo yum install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
     sudo systemctl enable --now docker
     sudo docker run hello-world
-
-    # Jenkins setup
     sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
     sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key
     sudo yum install -y jenkins
     sudo systemctl enable --now jenkins
-
-    # Apache setup
     sudo systemctl enable --now httpd
-
-    # Verify services status
     sudo systemctl status jenkins
     sudo systemctl status docker
     sudo systemctl status httpd
-
-    # Welcome message
     echo "Welcome to the CentOS static hoster - izjmz"
   EOT
 
