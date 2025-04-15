@@ -32,21 +32,21 @@ resource "aws_security_group" "instance_sg" {
     from_port   = 8080
     to_port     = 8080
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["0.0.0.0/0"] #Jenkins connection
   }
 
   ingress {
     from_port   = 9090
     to_port     = 9090
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["0.0.0.0/0"] #Prometheus connection
   }
 
   ingress {
     from_port   = 9100
     to_port     = 9100
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["0.0.0.0/0"] #Node-exporter connection
   }
 
   egress {
